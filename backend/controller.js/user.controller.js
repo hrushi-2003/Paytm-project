@@ -1,6 +1,9 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import zod from "zod";
+
+// register to account
 
 export const createAccount = async (req, res) => {
   try {
@@ -39,7 +42,7 @@ export const createAccount = async (req, res) => {
     console.log(error);
   }
 };
-
+// login to account
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -65,7 +68,7 @@ export const login = async (req, res) => {
         success: false,
       });
     }
-    const tokenData = {userId:user._id}
+    const tokenData = { userId: user._id };
     const accesstoken = jwt.sign(tokenData, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
@@ -78,7 +81,49 @@ export const login = async (req, res) => {
     console.log(error);
   }
 };
-
-export const updateProfile = async(req,res)=>{
-  const {firstname,lastname,password}=
-}
+//zod schema
+const updateSchema = zod.object({
+  firstname: zod.string().optional(),
+  lastname: zod.string().optional(),
+  password: zod.string().optional(),
+});
+// updating profile
+export const updateProfile = async (req, res) => {
+  console.log(req.user.userId);
+  const { success } = updateSchema.safeParse(req.body);
+  if (!success) {
+    return res.status(411).json({
+      message: "error while updating the info",
+      success: false,
+    });
+  }
+  await User.updateOne({ _id: req.user.userId }, req.body);
+  return res.status(200).json({
+    message: "updated successfully",
+    success: true,
+  });
+};
+// to get all users from the backend and filter them
+export const getUsers = async (req, res) => {
+  const { filter = "" } = req.query;
+  const user = await User.find({
+    $or: [
+      {
+        firstname: {
+          $regex: filter,
+          $options: "i",
+        },
+      },
+      {
+        lastname: {
+          $regex: filter,
+          $options: "i",
+        },
+      },
+    ],
+  });
+  return res.status(200).json({
+    user,
+    success: true,
+  });
+};
