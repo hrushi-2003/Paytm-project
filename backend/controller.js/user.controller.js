@@ -2,6 +2,7 @@ import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import zod from "zod";
+import { Account } from "../models/account.model.js";
 
 // register to account
 
@@ -29,6 +30,12 @@ export const createAccount = async (req, res) => {
       password: hashedPassword,
     });
     await user.save();
+    const id = user._id;
+    const account = await Account({
+      userId: id,
+      balance: 1 + Math.random() * 100000,
+    });
+    await account.save();
     const tokenData = { userId: user._id };
     const accesstoken = jwt.sign(tokenData, process.env.SECRET_KEY, {
       expiresIn: "1d",
@@ -89,41 +96,49 @@ const updateSchema = zod.object({
 });
 // updating profile
 export const updateProfile = async (req, res) => {
-  console.log(req.user.userId);
-  const { success } = updateSchema.safeParse(req.body);
-  if (!success) {
-    return res.status(411).json({
-      message: "error while updating the info",
-      success: false,
+  try {
+    const { success } = updateSchema.safeParse(req.body);
+    if (!success) {
+      return res.status(411).json({
+        message: "error while updating the info",
+        success: false,
+      });
+    }
+    await User.updateOne({ _id: req.user.userId }, req.body);
+    return res.status(200).json({
+      message: "updated successfully",
+      success: true,
     });
+  } catch (error) {
+    console.log(error);
   }
-  await User.updateOne({ _id: req.user.userId }, req.body);
-  return res.status(200).json({
-    message: "updated successfully",
-    success: true,
-  });
 };
+
 // to get all users from the backend and filter them
 export const getUsers = async (req, res) => {
-  const { filter = "" } = req.query;
-  const user = await User.find({
-    $or: [
-      {
-        firstname: {
-          $regex: filter,
-          $options: "i",
+  try {
+    const { filter = "" } = req.query;
+    const user = await User.find({
+      $or: [
+        {
+          firstname: {
+            $regex: filter,
+            $options: "i",
+          },
         },
-      },
-      {
-        lastname: {
-          $regex: filter,
-          $options: "i",
+        {
+          lastname: {
+            $regex: filter,
+            $options: "i",
+          },
         },
-      },
-    ],
-  });
-  return res.status(200).json({
-    user,
-    success: true,
-  });
+      ],
+    });
+    return res.status(200).json({
+      user,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
