@@ -48,13 +48,17 @@ const CreateAccount = () => {
           />
           <div className="pt-6">
             <ButtonBox
-              onClick={() => {
-                axios.post("http://localhost:8000/api/v1/user/createAccount", {
-                  email,
-                  firstname,
-                  lastname,
-                  password,
-                });
+              onClick={async () => {
+                const response = await axios.post(
+                  "http://localhost:8000/api/v1/user/createAccount",
+                  {
+                    email,
+                    firstname,
+                    lastname,
+                    password,
+                  }
+                );
+                localStorage.setItem("token", response.data.accesstoken);
               }}
               label={"Sign Up"}
             />
