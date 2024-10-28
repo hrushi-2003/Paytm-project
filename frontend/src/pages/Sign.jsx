@@ -34,11 +34,15 @@ const Sign = () => {
           />
           <div className="pt-6">
             <ButtonBox
-              onClick={() => {
-                axios.post("http://localhost:8000/api/v1/user/login", {
-                  email,
-                  password,
-                });
+              onClick={async () => {
+                const response = await axios.post(
+                  "http://localhost:8000/api/v1/user/login",
+                  {
+                    email,
+                    password,
+                  }
+                );
+                localStorage.setItem("token", response.data.accesstoken);
               }}
               label={"Sign in"}
             />
