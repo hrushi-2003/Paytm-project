@@ -15,7 +15,7 @@ const connectDb = async () => {
 };
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+app.use(cors());
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/account", accountRoute);
 const Port = process.env.PORT || 3000;
