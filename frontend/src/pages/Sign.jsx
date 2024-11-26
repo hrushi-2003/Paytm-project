@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import BottomWarning from "../components/BottomWarning";
 import ButtonBox from "../components/ButtonBox";
 import Heading from "../components/Heading";
@@ -10,6 +11,7 @@ import Sideheading from "../components/Sideheading";
 const Sign = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
   return (
     <div className="flex bg-gray-400 h-screen justify-center ">
       <div className="flex flex-col justify-center">
@@ -43,6 +45,9 @@ const Sign = () => {
                   }
                 );
                 localStorage.setItem("token", response.data.accesstoken);
+                if (response.data.success) {
+                  navigate("/dashboard");
+                }
               }}
               label={"Sign in"}
             />
