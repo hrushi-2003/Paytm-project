@@ -1,19 +1,26 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import zod from "zod";
+import zod, { ZodEffects } from "zod";
 import { Account } from "../models/account.model.js";
 import mongoose from "mongoose";
 
+//zodSchema of create account
+const creatAccountSchema = zod.object({
+  firstname: zod.string(),
+  lastname: zod.string(),
+  email: zod.email(),
+  password: zod.string(),
+});
 // register to account
-
 export const createAccount = async (req, res) => {
   try {
-    const { firstname, lastname, email, password } = req.body;
-    if (!firstname || !lastname || !email || !password) {
+    const { firstname, lastname, email, password } = await req.body;
+    const { success } = creatAccountSchema.safeParse(body);
+    if (!success) {
       return res.status(400).json({
         body: req.body,
-        message: "every field is required",
+        message: "validation error",
         success: false,
       });
     }
@@ -51,13 +58,19 @@ export const createAccount = async (req, res) => {
     console.log(error);
   }
 };
+//zod schema of login
+const loginSchema = zod.object({
+  email: zod.string(),
+  password: zod.string(),
+});
 // login to account
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
+    const { success } = loginSchema.safeParse(req.body);
+    if (!success) {
       return res.status(400).json({
-        message: "email and password are required for login",
+        message: "validation  error",
         success: false,
       });
     }
@@ -90,7 +103,7 @@ export const login = async (req, res) => {
     console.log(error);
   }
 };
-//zod schema
+//zod schema of update profile
 const updateSchema = zod.object({
   firstname: zod.string().optional(),
   lastname: zod.string().optional(),
@@ -115,7 +128,6 @@ export const updateProfile = async (req, res) => {
     console.log(error);
   }
 };
-
 // to get all users from the backend and filter them
 export const getUsers = async (req, res) => {
   try {
@@ -144,7 +156,7 @@ export const getUsers = async (req, res) => {
     console.log(error);
   }
 };
-
+// transfering from one account to another
 export const transfer = async (req, res) => {
   try {
     const session = await mongoose.startSession();
@@ -155,7 +167,7 @@ export const transfer = async (req, res) => {
     );
     if (!account || account.balance < Amount) {
       session.abortTransaction();
-      return res.status(200).json({
+      return res.status(400).json({
         message: "insuffient funds",
         balance: account.balance,
         success: false,
