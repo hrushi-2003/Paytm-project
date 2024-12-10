@@ -13,7 +13,7 @@ const connectDb = async () => {
     console.log("error in mongodb connection");
   }
 };
-const app = express();
+export const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/api/v1/user", userRoute);
@@ -23,3 +23,4 @@ app.listen(Port, () => {
   console.log(`app listening to the port ${Port}`);
   connectDb();
 });
+export default app;
