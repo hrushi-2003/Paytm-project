@@ -1,3 +1,3 @@
 import app from "./index";
 const serverless = require("serverless-http");
-module.exports = serverless(app);
+export default serverless(app);
